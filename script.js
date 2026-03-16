@@ -48,8 +48,8 @@ function heartPoints() {
    LIGHTBOX — tap any photo to zoom
    ══════════════════════════════════════ */
 function openLightbox(src) {
-  // Don't open if image failed (src is empty or broken)
-  if (!src || src === 'undefined') return;
+  // If no image, nothing to show
+  if (!src) return;
 
   // Inject keyframes once
   if (!document.getElementById('lbStyles')) {
@@ -83,6 +83,8 @@ function openLightbox(src) {
     display:block;
     animation: lbIn 0.3s cubic-bezier(.34,1.56,.64,1) both;
     cursor:default;
+    min-width:200px; min-height:200px;
+    background:#f9b8c8;
   `;
 
   const closeBtn = document.createElement('button');
@@ -152,16 +154,15 @@ function buildGrid() {
     img.alt     = `Memory ${i+1}`;
     img.loading = 'lazy';
 
-    // Store src on the div so click always has the right source
-    img.onload  = () => { div.dataset.src = img.src; };
     img.onerror = () => { img.style.display='none'; };
-
+    img.style.pointerEvents = 'none'; // let clicks pass through to div
     div.appendChild(img);
+    div.style.cursor = 'pointer';
 
-    // Tap to zoom
-    div.addEventListener('click', () => {
-      const src = div.dataset.src || (img.complete && img.naturalWidth ? img.src : null);
-      if (src) openLightbox(src);
+    // Tap/click to zoom
+    div.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openLightbox(img.src);
     });
 
     grid.appendChild(div);
