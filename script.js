@@ -2,43 +2,62 @@
    script.js — Romantic Website for Ma 💞
    ═══════════════════════════════════════════════════ */
 
-/* ══════════════════════════════════════════════════
-   CONFIG — edit these values to customise the site
+/* ══ CONFIG ══════════════════════════════════════════
+   Only edit this section to customise the site
 ══════════════════════════════════════════════════ */
+const CORRECT_DATE = '2026-03-11'; // YYYY-MM-DD
 
-// The correct unlock date in YYYY-MM-DD format
-const CORRECT_DATE = '2026-03-11';
-
-// Surrounding photos: place as images/photo01.jpg … images/photo19.jpg
 const SURROUNDING_PHOTOS = Array.from({ length: 19 }, (_, i) =>
   `images/photo${String(i + 1).padStart(2, '0')}.jpg`
 );
-
-// Center special photo: place as images/center.jpg
 const CENTER_PHOTO = 'images/center.jpg';
 
-/* ══════════════════════════════════════════════════
-   HEART LAYOUT
-   19 points following the classic heart parametric
-   curve (normalised 0–1), hand-tuned for balance.
+/* ══ HEART POSITIONS (normalised 0–1) ════════════════
+   19 points sampled from a classic heart curve
 ══════════════════════════════════════════════════ */
 const HEART_POSITIONS = [
-  { x: 0.50, y: 0.06 }, // top centre
-  { x: 0.34, y: 0.09 }, { x: 0.21, y: 0.17 }, { x: 0.12, y: 0.29 }, // upper-left lobe
-  { x: 0.09, y: 0.42 }, { x: 0.13, y: 0.54 }, { x: 0.22, y: 0.65 }, // left side
-  { x: 0.33, y: 0.74 }, { x: 0.42, y: 0.81 }, { x: 0.50, y: 0.87 }, // bottom-left → tip
-  { x: 0.58, y: 0.81 }, { x: 0.67, y: 0.74 }, { x: 0.78, y: 0.65 }, // bottom-right → tip
-  { x: 0.87, y: 0.54 }, { x: 0.91, y: 0.42 }, { x: 0.88, y: 0.29 }, // right side
-  { x: 0.79, y: 0.17 }, { x: 0.66, y: 0.09 },                        // upper-right lobe
-  { x: 0.50, y: 0.25 },                                                // inner upper
+  { x: 0.50, y: 0.05 }, // top centre
+  { x: 0.35, y: 0.08 }, { x: 0.20, y: 0.17 }, { x: 0.11, y: 0.30 }, // upper-left lobe
+  { x: 0.08, y: 0.43 }, { x: 0.12, y: 0.56 }, { x: 0.21, y: 0.67 }, // left side
+  { x: 0.32, y: 0.76 }, { x: 0.41, y: 0.83 }, { x: 0.50, y: 0.89 }, // bottom tip
+  { x: 0.59, y: 0.83 }, { x: 0.68, y: 0.76 }, { x: 0.79, y: 0.67 }, // right side
+  { x: 0.88, y: 0.56 }, { x: 0.92, y: 0.43 }, { x: 0.89, y: 0.30 }, // upper-right lobe
+  { x: 0.80, y: 0.17 }, { x: 0.65, y: 0.08 }, // upper-right
+  { x: 0.50, y: 0.27 }, // inner upper centre
 ];
 
-// Photo width as a fraction of the container width
 const PHOTO_SIZE_FRAC = 0.155;
 
-/* ══════════════════════════════════════════════════
-   BUILD HEART PHOTO GRID
+/* ══ SVG HEART CLIP-PATH ══════════════════════════════
+   Inject a real SVG heart <clipPath> into the DOM
+   so the centre photo is clipped to a true heart shape
 ══════════════════════════════════════════════════ */
+function injectHeartClipPath() {
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg   = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width', '0');
+  svg.setAttribute('height', '0');
+  svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
+
+  const defs = document.createElementNS(svgNS, 'defs');
+  const clip = document.createElementNS(svgNS, 'clipPath');
+  clip.setAttribute('id', 'heartClip');
+  clip.setAttribute('clipPathUnits', 'objectBoundingBox');
+
+  const path = document.createElementNS(svgNS, 'path');
+  // Heart path normalised to a 0–1 bounding box
+  path.setAttribute('d',
+    'M0.5,0.25 C0.5,0.25 0.1,-0.1 0.1,0.3 C0.1,0.6 0.5,0.9 0.5,0.95 ' +
+    'C0.5,0.9 0.9,0.6 0.9,0.3 C0.9,-0.1 0.5,0.25 0.5,0.25 Z'
+  );
+
+  clip.appendChild(path);
+  defs.appendChild(clip);
+  svg.appendChild(defs);
+  document.body.appendChild(svg);
+}
+
+/* ══ BUILD HEART PHOTO GRID ══════════════════════════ */
 function buildHeartGrid() {
   const grid = document.getElementById('heart-grid');
   grid.innerHTML = '';
@@ -47,7 +66,9 @@ function buildHeartGrid() {
   const H  = W * 0.95;
   const sz = W * PHOTO_SIZE_FRAC;
 
-  // Surrounding 19 photos
+  // Set explicit pixel height so absolute children are visible
+  grid.style.height = H + 'px';
+
   HEART_POSITIONS.forEach((pos, idx) => {
     const wrap = document.createElement('div');
     wrap.className = 'heart-photo';
@@ -64,7 +85,7 @@ function buildHeartGrid() {
     img.alt     = `Our memory ${idx + 1}`;
     img.loading = 'lazy';
     img.onerror = function () {
-      this.style.display = 'none';
+      this.style.display   = 'none';
       wrap.style.background = `hsl(${340 + idx * 4}, 65%, ${83 + (idx % 5) * 2}%)`;
     };
 
@@ -72,58 +93,80 @@ function buildHeartGrid() {
     grid.appendChild(wrap);
   });
 
-  // Centre special heart-shaped photo
+  // Centre heart photo
   const cWrap = document.createElement('div');
   cWrap.className = 'heart-center';
+
+  // Position & size centre piece
+  const cSize = sz * 2.2;
+  cWrap.style.cssText = `
+    width:  ${cSize}px;
+    height: ${cSize}px;
+    left:   ${W * 0.5  - cSize / 2}px;
+    top:    ${H * 0.48 - cSize / 2}px;
+  `;
 
   const cImg = document.createElement('img');
   cImg.src = CENTER_PHOTO;
   cImg.alt = 'Our special photo';
+  cImg.style.cssText = `
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    clip-path: url(#heartClip);
+    filter: drop-shadow(0 6px 22px rgba(192,57,79,0.45));
+    animation: heartPulse 2.5s ease-in-out infinite;
+  `;
   cImg.onerror = function () {
-    this.style.clipPath     = 'none';
-    this.style.borderRadius = '50%';
-    this.style.background   = 'linear-gradient(135deg, #f9a8b8, #e8637a)';
+    cWrap.style.background   = 'linear-gradient(135deg,#f9a8b8,#e8637a)';
+    cWrap.style.clipPath      = 'url(#heartClip)';
+    cWrap.style.borderRadius  = '0';
+    this.style.display        = 'none';
   };
 
+  // Rose-gradient heart border behind the image
+  const border = document.createElement('div');
+  border.className = 'heart-center-border';
+  border.style.cssText = `
+    position: absolute;
+    inset: -5px;
+    background: linear-gradient(135deg, #e8637a, #c0394f);
+    clip-path: url(#heartClip);
+    z-index: -1;
+  `;
+
+  cWrap.style.position = 'absolute';
+  cWrap.style.zIndex   = '5';
+  cWrap.appendChild(border);
   cWrap.appendChild(cImg);
   grid.appendChild(cWrap);
 }
 
-/* ══════════════════════════════════════════════════
-   FALLING HEARTS RAIN
-══════════════════════════════════════════════════ */
+/* ══ FALLING HEARTS RAIN ══════════════════════════════ */
 const EMOJI_SET = ['💗', '💕', '🌸', '💞', '❤️', '🌹', '💓', '✿', '💝'];
 
 function spawnHeart() {
   const container = document.getElementById('hearts-container');
   const heart     = document.createElement('span');
-
   heart.className  = 'rain-heart';
   heart.textContent = EMOJI_SET[Math.floor(Math.random() * EMOJI_SET.length)];
-
-  const duration = 4 + Math.random() * 6;
-
+  const dur = 4 + Math.random() * 6;
   heart.style.cssText = `
-    left:               ${Math.random() * 100}%;
-    font-size:          ${0.9 + Math.random() * 1.2}rem;
-    animation-duration: ${duration}s;
-    animation-delay:    ${Math.random() * 2}s;
+    left: ${Math.random() * 100}%;
+    font-size: ${0.9 + Math.random() * 1.2}rem;
+    animation-duration: ${dur}s;
+    animation-delay: ${Math.random() * 2}s;
   `;
-
   container.appendChild(heart);
-  setTimeout(() => heart.remove(), (duration + 3) * 1000);
+  setTimeout(() => heart.remove(), (dur + 3) * 1000);
 }
 
 function startRain() {
-  // Initial burst
   for (let i = 0; i < 14; i++) spawnHeart();
-  // Continuous stream
   setInterval(() => { spawnHeart(); spawnHeart(); }, 700);
 }
 
-/* ══════════════════════════════════════════════════
-   DATE CHECK
-══════════════════════════════════════════════════ */
+/* ══ DATE CHECK ══════════════════════════════════════ */
 function checkDate() {
   const val = document.getElementById('date-input').value;
   const err = document.getElementById('error-msg');
@@ -133,7 +176,6 @@ function checkDate() {
     err.classList.add('visible');
     return;
   }
-
   if (val === CORRECT_DATE) {
     err.classList.remove('visible');
     unlockMain();
@@ -144,112 +186,68 @@ function checkDate() {
   }
 }
 
-/* Card shake animation on wrong date */
 function shake(el) {
   el.style.transition = 'transform 0.08s ease';
-  const moves = [-8, 8, -6, 6, -3, 3, 0];
-  moves.forEach((x, i) => {
+  [-8, 8, -6, 6, -3, 3, 0].forEach((x, i) => {
     setTimeout(() => { el.style.transform = `translateX(${x}px)`; }, i * 70);
   });
-  setTimeout(() => {
-    el.style.transform  = '';
-    el.style.transition = '';
-  }, moves.length * 70 + 80);
+  setTimeout(() => { el.style.transform = ''; el.style.transition = ''; }, 560);
 }
 
-/* ══════════════════════════════════════════════════
-   UNLOCK TRANSITION
-══════════════════════════════════════════════════ */
+/* ══ UNLOCK TRANSITION ════════════════════════════════ */
 function unlockMain() {
   const opening = document.getElementById('opening-page');
   const main    = document.getElementById('main-page');
 
-  // Reveal main page
   main.classList.remove('hidden');
   main.style.overflowY = 'auto';
 
-  // Build grid, start rain, play music after a short delay
-  setTimeout(() => {
-    buildHeartGrid();
-    startRain();
-    playMusic();
-  }, 200);
-
-  // Fade out & remove opening page
+  setTimeout(() => { buildHeartGrid(); startRain(); playMusic(); }, 300);
   setTimeout(() => {
     opening.classList.add('hidden');
     setTimeout(() => opening.remove(), 1000);
   }, 120);
 }
 
-/* ══════════════════════════════════════════════════
-   BACKGROUND MUSIC
-   Place your file at: audio/music.mp3
-══════════════════════════════════════════════════ */
+/* ══ BACKGROUND MUSIC ════════════════════════════════ */
 function playMusic() {
   const audio = document.getElementById('bg-music');
   if (!audio) return;
-
   audio.volume = 0;
-
-  audio.play()
-    .then(() => {
-      // Gentle volume fade-in
-      let v = 0;
-      const ticker = setInterval(() => {
-        v = Math.min(v + 0.02, 0.45);
-        audio.volume = v;
-        if (v >= 0.45) clearInterval(ticker);
-      }, 120);
-    })
-    .catch(() => {
-      // Autoplay blocked — show a tap-to-play banner
-      const banner = document.createElement('div');
-      banner.innerHTML = '🎵 Tap anywhere to play music';
-      banner.style.cssText = `
-        position:    fixed;
-        bottom:      24px;
-        left:        50%;
-        transform:   translateX(-50%);
-        background:  rgba(232, 99, 122, 0.92);
-        color:       #fff;
-        padding:     10px 26px;
-        border-radius: 50px;
-        font-family: 'Dancing Script', cursive;
-        font-size:   1.05rem;
-        cursor:      pointer;
-        z-index:     9999;
-        box-shadow:  0 4px 16px rgba(192, 57, 79, 0.3);
-        white-space: nowrap;
-      `;
-      document.body.appendChild(banner);
-
-      const startAudio = () => {
-        audio.volume = 0.4;
-        audio.play();
-        banner.remove();
-        document.removeEventListener('click', startAudio);
-      };
-      document.addEventListener('click', startAudio);
-    });
+  audio.play().then(() => {
+    let v = 0;
+    const t = setInterval(() => {
+      v = Math.min(v + 0.02, 0.45);
+      audio.volume = v;
+      if (v >= 0.45) clearInterval(t);
+    }, 120);
+  }).catch(() => {
+    const banner = document.createElement('div');
+    banner.innerHTML = '🎵 Tap anywhere to play music';
+    banner.style.cssText = `
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+      background:rgba(232,99,122,0.92); color:#fff; padding:10px 26px;
+      border-radius:50px; font-family:'Dancing Script',cursive; font-size:1.05rem;
+      cursor:pointer; z-index:9999; box-shadow:0 4px 16px rgba(192,57,79,0.3);
+      white-space:nowrap;
+    `;
+    document.body.appendChild(banner);
+    const go = () => { audio.volume = 0.4; audio.play(); banner.remove(); document.removeEventListener('click', go); };
+    document.addEventListener('click', go);
+  });
 }
 
-/* ══════════════════════════════════════════════════
-   EVENT LISTENERS
-══════════════════════════════════════════════════ */
+/* ══ INIT ════════════════════════════════════════════ */
+injectHeartClipPath();
 
-// Allow Enter key to confirm the date
 document.getElementById('date-input')
-  .addEventListener('keydown', e => {
-    if (e.key === 'Enter') checkDate();
-  });
+  .addEventListener('keydown', e => { if (e.key === 'Enter') checkDate(); });
 
-// Rebuild photo grid on window resize
-let _resizeTimer;
+let _rt;
 window.addEventListener('resize', () => {
-  clearTimeout(_resizeTimer);
-  _resizeTimer = setTimeout(() => {
-    const grid = document.getElementById('heart-grid');
-    if (grid && grid.children.length) buildHeartGrid();
+  clearTimeout(_rt);
+  _rt = setTimeout(() => {
+    const g = document.getElementById('heart-grid');
+    if (g && g.children.length) buildHeartGrid();
   }, 250);
 });
