@@ -18,32 +18,7 @@ const BLUSH = [
   '#f9c0cc','#f7b0c2','#f5a4b6','#fbbcc8'
 ];
 
-/* ══════════════════════════════════════
-   SVG HEART CLIP-PATH
-   Injected once into <body> so the centre
-   photo can be clipped to a real heart shape
-   ══════════════════════════════════════ */
-function injectSVG() {
-  if (document.getElementById('ma-svg')) return;
-  const el = document.createElementNS('http://www.w3.org/2000/svg','svg');
-  el.id = 'ma-svg';
-  el.setAttribute('width','0');
-  el.setAttribute('height','0');
-  el.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
-  /* Heart path in objectBoundingBox coords (0–1) */
-  el.innerHTML = `<defs>
-    <clipPath id="heartClip" clipPathUnits="objectBoundingBox">
-      <path d="M0.5,0.93
-               C0.5,0.93 0.05,0.60 0.05,0.32
-               C0.05,0.12 0.18,0.02 0.32,0.02
-               C0.41,0.02 0.50,0.10 0.50,0.10
-               C0.50,0.10 0.59,0.02 0.68,0.02
-               C0.82,0.02 0.95,0.12 0.95,0.32
-               C0.95,0.60 0.50,0.93 0.50,0.93Z"/>
-    </clipPath>
-  </defs>`;
-  document.body.insertBefore(el, document.body.firstChild);
-}
+/* SVG clip-path replaced with CSS mask-image — no SVG injection needed */
 
 /* ══════════════════════════════════════
    HEART POSITIONS
@@ -230,7 +205,7 @@ function playMusic(){
 /* ══════════════════════════════════════
    INIT
    ══════════════════════════════════════ */
-injectSVG();
+
 
 document.getElementById('date-input')
   .addEventListener('keydown',e=>{ if(e.key==='Enter') checkDate(); });
