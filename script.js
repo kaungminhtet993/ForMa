@@ -100,6 +100,7 @@ function buildGrid() {
     img.loading = 'lazy';
     img.onerror = () => { img.style.display='none'; };
     div.appendChild(img);
+    div.addEventListener('click', () => openLightbox(img.src, img.alt));
     grid.appendChild(div);
   });
 
@@ -125,6 +126,8 @@ function buildGrid() {
   cImg.alt = 'Our special photo';
   cImg.onerror = () => { cImg.style.display='none'; };
   hc.appendChild(cImg);
+  hc.style.cursor = 'pointer';
+  hc.addEventListener('click', () => openLightbox(CENTER_PHOTO, 'Our special photo'));
 
   grid.appendChild(hc);
 }
@@ -200,6 +203,92 @@ function playMusic(){
     const go=()=>{ a.volume=.4; a.play(); b.remove(); document.removeEventListener('click',go); };
     document.addEventListener('click',go);
   });
+}
+
+/* ══════════════════════════════════════
+   LIGHTBOX — tap any photo to zoom
+   ══════════════════════════════════════ */
+function openLightbox(src, alt) {
+  // overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'lightbox';
+  overlay.style.cssText = `
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(30,8,14,0.82);
+    display: flex; align-items: center; justify-content: center;
+    animation: lbFadeIn 0.25s ease;
+    cursor: zoom-out;
+    backdrop-filter: blur(6px);
+  `;
+
+  // image wrapper (for heart clip on center photo)
+  const imgWrap = document.createElement('div');
+  imgWrap.style.cssText = `
+    position: relative;
+    max-width: 88vw; max-height: 88vh;
+    animation: lbZoomIn 0.28s cubic-bezier(.34,1.56,.64,1);
+  `;
+
+  const img = document.createElement('img');
+  img.src = src;
+  img.alt = alt;
+  img.style.cssText = `
+    max-width: 88vw; max-height: 82vh;
+    border-radius: 20px;
+    border: 3px solid rgba(255,255,255,0.85);
+    box-shadow: 0 24px 80px rgba(192,57,79,0.5);
+    display: block;
+    object-fit: contain;
+  `;
+
+  // close button
+  const close = document.createElement('button');
+  close.innerHTML = '✕';
+  close.style.cssText = `
+    position: absolute; top: -16px; right: -16px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg,#e8637a,#c0394f);
+    color: #fff; border: none; font-size: 1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(192,57,79,0.4);
+    z-index: 1;
+  `;
+
+  // heart label at bottom
+  const label = document.createElement('p');
+  label.textContent = '💗';
+  label.style.cssText = `
+    text-align: center; margin-top: 14px;
+    font-size: 1.6rem; animation: heartPulse 1.5s ease-in-out infinite;
+  `;
+
+  imgWrap.appendChild(img);
+  imgWrap.appendChild(close);
+  overlay.appendChild(imgWrap);
+  overlay.appendChild(label);
+  document.body.appendChild(overlay);
+
+  // inject keyframes once
+  if (!document.getElementById('lbStyles')) {
+    const s = document.createElement('style');
+    s.id = 'lbStyles';
+    s.textContent = `
+      @keyframes lbFadeIn  { from{opacity:0} to{opacity:1} }
+      @keyframes lbZoomIn  { from{transform:scale(0.6);opacity:0} to{transform:scale(1);opacity:1} }
+    `;
+    document.head.appendChild(s);
+  }
+
+  const closeLb = (e) => {
+    if (e.target === overlay || e.target === close || e.key === 'Escape') {
+      overlay.style.animation = 'lbFadeIn 0.2s ease reverse';
+      setTimeout(() => overlay.remove(), 200);
+      document.removeEventListener('keydown', closeLb);
+    }
+  };
+  overlay.addEventListener('click', closeLb);
+  close.addEventListener('click', closeLb);
+  document.addEventListener('keydown', closeLb);
 }
 
 /* ══════════════════════════════════════
