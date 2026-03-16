@@ -2,59 +2,53 @@
    script.js — Romantic Website for Ma 💞
    ═══════════════════════════════════════════════════ */
 
-/* ══ CONFIG ══════════════════════════════════════════
-   Only edit this section to customise the site
-══════════════════════════════════════════════════ */
-const CORRECT_DATE = '2026-03-11'; // YYYY-MM-DD
+/* ══ CONFIG ══════════════════════════════════════════ */
+const CORRECT_DATE = '2026-03-11';
 
 const SURROUNDING_PHOTOS = Array.from({ length: 19 }, (_, i) =>
   `images/photo${String(i + 1).padStart(2, '0')}.jpg`
 );
 const CENTER_PHOTO = 'images/center.jpg';
 
-/* ══ HEART POSITIONS (normalised 0–1) ════════════════
-   19 points sampled from a classic heart curve
-══════════════════════════════════════════════════ */
+/* ══ HEART POSITIONS (normalised 0–1) ════════════════ */
 const HEART_POSITIONS = [
-  { x: 0.50, y: 0.05 }, // top centre
-  { x: 0.35, y: 0.08 }, { x: 0.20, y: 0.17 }, { x: 0.11, y: 0.30 }, // upper-left lobe
-  { x: 0.08, y: 0.43 }, { x: 0.12, y: 0.56 }, { x: 0.21, y: 0.67 }, // left side
-  { x: 0.32, y: 0.76 }, { x: 0.41, y: 0.83 }, { x: 0.50, y: 0.89 }, // bottom tip
-  { x: 0.59, y: 0.83 }, { x: 0.68, y: 0.76 }, { x: 0.79, y: 0.67 }, // right side
-  { x: 0.88, y: 0.56 }, { x: 0.92, y: 0.43 }, { x: 0.89, y: 0.30 }, // upper-right lobe
-  { x: 0.80, y: 0.17 }, { x: 0.65, y: 0.08 }, // upper-right
-  { x: 0.50, y: 0.27 }, // inner upper centre
+  { x: 0.50, y: 0.05 },
+  { x: 0.35, y: 0.08 }, { x: 0.20, y: 0.17 }, { x: 0.11, y: 0.30 },
+  { x: 0.08, y: 0.43 }, { x: 0.12, y: 0.56 }, { x: 0.21, y: 0.67 },
+  { x: 0.32, y: 0.76 }, { x: 0.41, y: 0.83 }, { x: 0.50, y: 0.89 },
+  { x: 0.59, y: 0.83 }, { x: 0.68, y: 0.76 }, { x: 0.79, y: 0.67 },
+  { x: 0.88, y: 0.56 }, { x: 0.92, y: 0.43 }, { x: 0.89, y: 0.30 },
+  { x: 0.80, y: 0.17 }, { x: 0.65, y: 0.08 },
+  { x: 0.50, y: 0.27 },
 ];
 
-const PHOTO_SIZE_FRAC = 0.155;
+const PHOTO_SIZE_FRAC = 0.14;
 
-/* ══ SVG HEART CLIP-PATH ══════════════════════════════
-   Inject a real SVG heart <clipPath> into the DOM
-   so the centre photo is clipped to a true heart shape
-══════════════════════════════════════════════════ */
+/* ══ INJECT SVG HEART CLIP-PATH ══════════════════════ */
 function injectHeartClipPath() {
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const svg   = document.createElementNS(svgNS, 'svg');
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   svg.setAttribute('width', '0');
   svg.setAttribute('height', '0');
-  svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
+  svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;';
 
-  const defs = document.createElementNS(svgNS, 'defs');
-  const clip = document.createElementNS(svgNS, 'clipPath');
-  clip.setAttribute('id', 'heartClip');
-  clip.setAttribute('clipPathUnits', 'objectBoundingBox');
-
-  const path = document.createElementNS(svgNS, 'path');
-  // Heart path normalised to a 0–1 bounding box
-  path.setAttribute('d',
-    'M0.5,0.25 C0.5,0.25 0.1,-0.1 0.1,0.3 C0.1,0.6 0.5,0.9 0.5,0.95 ' +
-    'C0.5,0.9 0.9,0.6 0.9,0.3 C0.9,-0.1 0.5,0.25 0.5,0.25 Z'
-  );
-
-  clip.appendChild(path);
-  defs.appendChild(clip);
-  svg.appendChild(defs);
-  document.body.appendChild(svg);
+  svg.innerHTML = `
+    <defs>
+      <clipPath id="heartClip" clipPathUnits="objectBoundingBox">
+        <path d="
+          M 0.5 0.25
+          C 0.5 0.25, 0.42 0.10, 0.27 0.10
+          C 0.08 0.10, 0.08 0.35, 0.08 0.35
+          C 0.08 0.55, 0.28 0.72, 0.5  0.92
+          C 0.72 0.72, 0.92 0.55, 0.92 0.35
+          C 0.92 0.35, 0.92 0.10, 0.73 0.10
+          C 0.58 0.10, 0.5  0.25, 0.5  0.25
+          Z
+        "/>
+      </clipPath>
+    </defs>
+  `;
+  document.body.insertBefore(svg, document.body.firstChild);
 }
 
 /* ══ BUILD HEART PHOTO GRID ══════════════════════════ */
@@ -62,12 +56,24 @@ function buildHeartGrid() {
   const grid = document.getElementById('heart-grid');
   grid.innerHTML = '';
 
-  const W  = grid.offsetWidth;
-  const H  = W * 0.95;
-  const sz = W * PHOTO_SIZE_FRAC;
+  // Use clientWidth; fall back to a sensible default
+  const W  = grid.clientWidth || 700;
+  const H  = Math.round(W * 0.95);
+  const sz = Math.round(W * PHOTO_SIZE_FRAC);
 
-  // Set explicit pixel height so absolute children are visible
+  // CRITICAL: set explicit pixel height so children are visible
+  grid.style.width  = '100%';
   grid.style.height = H + 'px';
+  grid.style.position = 'relative';
+  grid.style.display  = 'block';
+
+  // Blush tones for placeholders
+  const placeholderColors = [
+    '#f9c8d2','#f7b8c6','#f5a8ba','#f9d4dc','#fbe0e6',
+    '#f7c0cc','#f5b0be','#f9ccd4','#f7bcca','#f5acba',
+    '#f9c4ce','#f7b4c2','#f5a4b6','#f9d0d8','#fbdce4',
+    '#f7c8d0','#f5b8c4','#f9c0ca','#f7b0be'
+  ];
 
   HEART_POSITIONS.forEach((pos, idx) => {
     const wrap = document.createElement('div');
@@ -75,90 +81,97 @@ function buildHeartGrid() {
     wrap.style.cssText = `
       width:  ${sz}px;
       height: ${sz}px;
-      left:   ${pos.x * W - sz / 2}px;
-      top:    ${pos.y * H - sz / 2}px;
-      animation-delay: ${idx * 0.07}s;
+      left:   ${Math.round(pos.x * W - sz / 2)}px;
+      top:    ${Math.round(pos.y * H - sz / 2)}px;
+      animation-delay: ${(idx * 0.07).toFixed(2)}s;
+      background: ${placeholderColors[idx]};
     `;
 
     const img = document.createElement('img');
     img.src     = SURROUNDING_PHOTOS[idx];
     img.alt     = `Our memory ${idx + 1}`;
     img.loading = 'lazy';
-    img.onerror = function () {
-      this.style.display   = 'none';
-      wrap.style.background = `hsl(${340 + idx * 4}, 65%, ${83 + (idx % 5) * 2}%)`;
-    };
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+    img.onerror = function () { this.style.display = 'none'; };
 
     wrap.appendChild(img);
     grid.appendChild(wrap);
   });
 
-  // Centre heart photo
+  /* ── Centre heart ── */
+  const cSize = Math.round(sz * 2.4);
+  const cLeft = Math.round(W * 0.50 - cSize / 2);
+  const cTop  = Math.round(H * 0.47 - cSize / 2);
+
   const cWrap = document.createElement('div');
   cWrap.className = 'heart-center';
-
-  // Position & size centre piece
-  const cSize = sz * 2.2;
   cWrap.style.cssText = `
+    position: absolute;
     width:  ${cSize}px;
     height: ${cSize}px;
-    left:   ${W * 0.5  - cSize / 2}px;
-    top:    ${H * 0.48 - cSize / 2}px;
+    left:   ${cLeft}px;
+    top:    ${cTop}px;
+    z-index: 6;
   `;
 
+  // Rose gradient border layer (same heart clip)
+  const border = document.createElement('div');
+  border.style.cssText = `
+    position: absolute;
+    inset: -6px;
+    background: linear-gradient(135deg, #e8637a, #c0394f);
+    clip-path: url(#heartClip);
+  `;
+  cWrap.appendChild(border);
+
+  // Placeholder fill (visible when image not yet loaded)
+  const fill = document.createElement('div');
+  fill.style.cssText = `
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #fbd0d8, #f5a8ba);
+    clip-path: url(#heartClip);
+  `;
+  cWrap.appendChild(fill);
+
+  // Actual photo
   const cImg = document.createElement('img');
   cImg.src = CENTER_PHOTO;
   cImg.alt = 'Our special photo';
   cImg.style.cssText = `
-    width: 100%; height: 100%;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     display: block;
     clip-path: url(#heartClip);
     filter: drop-shadow(0 6px 22px rgba(192,57,79,0.45));
     animation: heartPulse 2.5s ease-in-out infinite;
   `;
-  cImg.onerror = function () {
-    cWrap.style.background   = 'linear-gradient(135deg,#f9a8b8,#e8637a)';
-    cWrap.style.clipPath      = 'url(#heartClip)';
-    cWrap.style.borderRadius  = '0';
-    this.style.display        = 'none';
-  };
-
-  // Rose-gradient heart border behind the image
-  const border = document.createElement('div');
-  border.className = 'heart-center-border';
-  border.style.cssText = `
-    position: absolute;
-    inset: -5px;
-    background: linear-gradient(135deg, #e8637a, #c0394f);
-    clip-path: url(#heartClip);
-    z-index: -1;
-  `;
-
-  cWrap.style.position = 'absolute';
-  cWrap.style.zIndex   = '5';
-  cWrap.appendChild(border);
+  cImg.onerror = function () { this.style.display = 'none'; }; // placeholder fill shows instead
   cWrap.appendChild(cImg);
+
   grid.appendChild(cWrap);
 }
 
-/* ══ FALLING HEARTS RAIN ══════════════════════════════ */
-const EMOJI_SET = ['💗', '💕', '🌸', '💞', '❤️', '🌹', '💓', '✿', '💝'];
+/* ══ FALLING HEARTS ══════════════════════════════════ */
+const EMOJI_SET = ['💗','💕','🌸','💞','❤️','🌹','💓','✿','💝'];
 
 function spawnHeart() {
-  const container = document.getElementById('hearts-container');
-  const heart     = document.createElement('span');
-  heart.className  = 'rain-heart';
-  heart.textContent = EMOJI_SET[Math.floor(Math.random() * EMOJI_SET.length)];
+  const c   = document.getElementById('hearts-container');
+  const h   = document.createElement('span');
   const dur = 4 + Math.random() * 6;
-  heart.style.cssText = `
+  h.className   = 'rain-heart';
+  h.textContent = EMOJI_SET[Math.floor(Math.random() * EMOJI_SET.length)];
+  h.style.cssText = `
     left: ${Math.random() * 100}%;
     font-size: ${0.9 + Math.random() * 1.2}rem;
     animation-duration: ${dur}s;
     animation-delay: ${Math.random() * 2}s;
   `;
-  container.appendChild(heart);
-  setTimeout(() => heart.remove(), (dur + 3) * 1000);
+  c.appendChild(h);
+  setTimeout(() => h.remove(), (dur + 3) * 1000);
 }
 
 function startRain() {
@@ -170,7 +183,6 @@ function startRain() {
 function checkDate() {
   const val = document.getElementById('date-input').value;
   const err = document.getElementById('error-msg');
-
   if (!val) {
     err.textContent = 'Please pick a date, my love 🌸';
     err.classList.add('visible');
@@ -187,14 +199,13 @@ function checkDate() {
 }
 
 function shake(el) {
-  el.style.transition = 'transform 0.08s ease';
-  [-8, 8, -6, 6, -3, 3, 0].forEach((x, i) => {
+  [-8,8,-6,6,-3,3,0].forEach((x, i) => {
     setTimeout(() => { el.style.transform = `translateX(${x}px)`; }, i * 70);
   });
-  setTimeout(() => { el.style.transform = ''; el.style.transition = ''; }, 560);
+  setTimeout(() => { el.style.transform = ''; }, 560);
 }
 
-/* ══ UNLOCK TRANSITION ════════════════════════════════ */
+/* ══ UNLOCK ══════════════════════════════════════════ */
 function unlockMain() {
   const opening = document.getElementById('opening-page');
   const main    = document.getElementById('main-page');
@@ -202,14 +213,22 @@ function unlockMain() {
   main.classList.remove('hidden');
   main.style.overflowY = 'auto';
 
-  setTimeout(() => { buildHeartGrid(); startRain(); playMusic(); }, 300);
+  // Wait for main page to be laid out before measuring grid width
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      buildHeartGrid();
+      startRain();
+      playMusic();
+    });
+  });
+
   setTimeout(() => {
     opening.classList.add('hidden');
     setTimeout(() => opening.remove(), 1000);
-  }, 120);
+  }, 150);
 }
 
-/* ══ BACKGROUND MUSIC ════════════════════════════════ */
+/* ══ MUSIC ═══════════════════════════════════════════ */
 function playMusic() {
   const audio = document.getElementById('bg-music');
   if (!audio) return;
@@ -222,17 +241,17 @@ function playMusic() {
       if (v >= 0.45) clearInterval(t);
     }, 120);
   }).catch(() => {
-    const banner = document.createElement('div');
-    banner.innerHTML = '🎵 Tap anywhere to play music';
-    banner.style.cssText = `
+    const b = document.createElement('div');
+    b.innerHTML = '🎵 Tap anywhere to play music';
+    b.style.cssText = `
       position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
       background:rgba(232,99,122,0.92); color:#fff; padding:10px 26px;
       border-radius:50px; font-family:'Dancing Script',cursive; font-size:1.05rem;
       cursor:pointer; z-index:9999; box-shadow:0 4px 16px rgba(192,57,79,0.3);
       white-space:nowrap;
     `;
-    document.body.appendChild(banner);
-    const go = () => { audio.volume = 0.4; audio.play(); banner.remove(); document.removeEventListener('click', go); };
+    document.body.appendChild(b);
+    const go = () => { audio.volume=0.4; audio.play(); b.remove(); document.removeEventListener('click',go); };
     document.addEventListener('click', go);
   });
 }
