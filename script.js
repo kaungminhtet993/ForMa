@@ -1,251 +1,320 @@
-/* ═══════════════════════════════════════════════════
-   script.js — Romantic Website for Ma 💞
-   ═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   style.css  —  For Ma 💞
+   ═══════════════════════════════════════ */
 
-const CORRECT_DATE = '2026-03-11';
-
-const SURROUNDING_PHOTOS = Array.from({ length: 19 }, (_, i) =>
-  `images/photo${String(i + 1).padStart(2, '0')}.jpg`
-);
-const CENTER_PHOTO = 'images/center.jpg';
-
-/* ══════════════════════════════════════════════════
-   HEART POSITIONS
-   Using the parametric heart equation:
-     x(t) = 16·sin³(t)
-     y(t) = 13·cos(t) − 5·cos(2t) − 2·cos(3t) − cos(4t)
-   19 points sampled evenly, then normalised to 0–1
-══════════════════════════════════════════════════ */
-function getHeartPoints(n) {
-  const raw = [];
-  // Sample t from -π to π, skip the very bottom tip for balance
-  for (let i = 0; i < n; i++) {
-    const t = -Math.PI + (2 * Math.PI * i) / n;
-    const x =  16 * Math.pow(Math.sin(t), 3);
-    const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-    raw.push({ x, y });
-  }
-  // Normalise to 0–1
-  const xs = raw.map(p => p.x);
-  const ys = raw.map(p => p.y);
-  const minX = Math.min(...xs), maxX = Math.max(...xs);
-  const minY = Math.min(...ys), maxY = Math.max(...ys);
-  return raw.map(p => ({
-    x: (p.x - minX) / (maxX - minX),
-    y: (p.y - minY) / (maxY - minY),
-  }));
+:root {
+  --rose:      #e8637a;
+  --deep:      #c0394f;
+  --blush:     #fbd0d8;
+  --cream:     #fff6f8;
+  --gold:      #d4a0a8;
+  --dark:      #3b1a22;
+  --shadow:    rgba(192,57,79,0.30);
 }
 
-/* ══ INJECT SVG HEART CLIP-PATH FOR CENTRE PHOTO ════ */
-function injectHeartClipPath() {
-  const existing = document.getElementById('heartClipSVG');
-  if (existing) existing.remove();
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.id = 'heartClipSVG';
-  svg.setAttribute('width', '0');
-  svg.setAttribute('height', '0');
-  svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;';
-  svg.innerHTML = `
-    <defs>
-      <clipPath id="heartClip" clipPathUnits="objectBoundingBox">
-        <path d="M0.5,0.25 C0.5,0.1 0.35,0.02 0.22,0.02 C0.05,0.02 0.05,0.22 0.05,0.28
-                 C0.05,0.5  0.28,0.70 0.5,0.95
-                 C0.72,0.70 0.95,0.5  0.95,0.28
-                 C0.95,0.22 0.95,0.02 0.78,0.02
-                 C0.65,0.02 0.5,0.1  0.5,0.25 Z"/>
-      </clipPath>
-    </defs>`;
-  document.body.insertBefore(svg, document.body.firstChild);
+html, body {
+  width: 100%; height: 100%;
+  overflow-x: hidden;
+  font-family: 'Lato', sans-serif;
+  background: var(--cream);
+  color: var(--dark);
 }
 
-/* ══ BUILD HEART PHOTO GRID ══════════════════════════ */
-function buildHeartGrid() {
-  const section = document.getElementById('heart-section');
-  const grid    = document.getElementById('heart-grid');
-  grid.innerHTML = '';
-
-  // Size the canvas
-  const maxW = Math.min(section.clientWidth - 48, 720);
-  const W    = maxW;
-  const H    = W; // square canvas — heart fills it
-  const sz   = Math.round(W * 0.13); // circle diameter
-  const r    = sz / 2;
-
-  grid.style.width    = W + 'px';
-  grid.style.height   = H + 'px';
-  grid.style.position = 'relative';
-  grid.style.margin   = '0 auto';
-  grid.style.display  = 'block';
-
-  const points = getHeartPoints(19);
-
-  const pinkShades = [
-    '#f9b8c8','#f7a8ba','#f5c0cc','#fbd0d8','#f9c4d0',
-    '#f7b0c0','#f5a0b4','#fbc8d4','#f9bcc8','#f7acbc',
-    '#f5bcca','#f9c8d2','#f7b8c4','#f5a8b8','#fbd4dc',
-    '#f9c0cc','#f7b0c2','#f5a4b6','#fbbcc8',
-  ];
-
-  points.forEach((pos, idx) => {
-    // Map 0–1 to pixel, with padding so circles don't clip the edge
-    const pad  = sz * 0.6;
-    const cx   = pad + pos.x * (W - pad * 2);
-    const cy   = pad + pos.y * (H - pad * 2);
-
-    const wrap = document.createElement('div');
-    wrap.className = 'heart-photo';
-    wrap.style.cssText = `
-      width:            ${sz}px;
-      height:           ${sz}px;
-      border-radius:    50%;
-      left:             ${Math.round(cx - r)}px;
-      top:              ${Math.round(cy - r)}px;
-      animation-delay:  ${(idx * 0.06).toFixed(2)}s;
-      background:       ${pinkShades[idx]};
-    `;
-
-    const img = document.createElement('img');
-    img.src   = SURROUNDING_PHOTOS[idx];
-    img.alt   = `Our memory ${idx + 1}`;
-    img.loading = 'lazy';
-    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;';
-    img.onerror = () => { img.style.display = 'none'; };
-    wrap.appendChild(img);
-    grid.appendChild(wrap);
-  });
-
-  /* ── Centre heart photo ── */
-  const cSize = Math.round(sz * 2.2);
-  const cX    = Math.round(W / 2 - cSize / 2);
-  const cY    = Math.round(H * 0.47 - cSize / 2);
-
-  const cWrap = document.createElement('div');
-  cWrap.style.cssText = `
-    position: absolute;
-    width:    ${cSize}px;
-    height:   ${cSize}px;
-    left:     ${cX}px;
-    top:      ${cY}px;
-    z-index:  6;
-  `;
-
-  // gradient border
-  const border = document.createElement('div');
-  border.style.cssText = `
-    position:   absolute;
-    inset:      -6px;
-    background: linear-gradient(135deg,#e8637a,#c0394f);
-    clip-path:  url(#heartClip);
-  `;
-  cWrap.appendChild(border);
-
-  // soft pink placeholder fill
-  const fill = document.createElement('div');
-  fill.style.cssText = `
-    position:   absolute;
-    inset:      0;
-    background: linear-gradient(135deg,#fbd0d8,#f5a8ba);
-    clip-path:  url(#heartClip);
-  `;
-  cWrap.appendChild(fill);
-
-  const cImg = document.createElement('img');
-  cImg.src = CENTER_PHOTO;
-  cImg.alt = 'Our special photo';
-  cImg.style.cssText = `
-    position:   absolute;
-    inset:      0;
-    width:      100%;
-    height:     100%;
-    object-fit: cover;
-    display:    block;
-    clip-path:  url(#heartClip);
-    filter:     drop-shadow(0 6px 22px rgba(192,57,79,0.45));
-    animation:  heartPulse 2.5s ease-in-out infinite;
-  `;
-  cImg.onerror = () => { cImg.style.display = 'none'; };
-  cWrap.appendChild(cImg);
-
-  grid.appendChild(cWrap);
+/* ── Pages ────────────────────────────── */
+.page {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+.page.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.04);
 }
 
-/* ══ FALLING HEARTS ══════════════════════════════════ */
-const EMOJI_SET = ['💗','💕','🌸','💞','❤️','🌹','💓','✿','💝'];
-function spawnHeart() {
-  const c = document.getElementById('hearts-container');
-  const h = document.createElement('span');
-  const dur = 4 + Math.random() * 6;
-  h.className   = 'rain-heart';
-  h.textContent = EMOJI_SET[Math.floor(Math.random() * EMOJI_SET.length)];
-  h.style.cssText = `
-    left:${Math.random()*100}%;
-    font-size:${0.9+Math.random()*1.2}rem;
-    animation-duration:${dur}s;
-    animation-delay:${Math.random()*2}s;
-  `;
-  c.appendChild(h);
-  setTimeout(() => h.remove(), (dur+3)*1000);
+/* ── Opening Page ─────────────────────── */
+#opening-page {
+  background: radial-gradient(ellipse at 60% 40%, #fde8ed, #fbd0d8 45%, #f5b8c4);
+  z-index: 10;
 }
-function startRain() {
-  for (let i=0;i<14;i++) spawnHeart();
-  setInterval(()=>{ spawnHeart(); spawnHeart(); }, 700);
+#opening-page::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.55) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255,255,255,.35) 0%, transparent 40%);
+  pointer-events: none;
 }
 
-/* ══ DATE CHECK ══════════════════════════════════════ */
-function checkDate() {
-  const val = document.getElementById('date-input').value;
-  const err = document.getElementById('error-msg');
-  if (!val) { err.textContent='Please pick a date, my love 🌸'; err.classList.add('visible'); return; }
-  if (val === CORRECT_DATE) { err.classList.remove('visible'); unlockMain(); }
-  else { err.textContent="Hmm… that's not our special day. Try again my love 💭"; err.classList.add('visible'); shake(document.querySelector('.opening-card')); }
+.opening-card {
+  background: rgba(255,255,255,.70);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,.85);
+  border-radius: 28px;
+  padding: 52px 56px 48px;
+  max-width: 520px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(192,57,79,.16), 0 4px 20px rgba(232,99,122,.10);
+  position: relative; z-index: 1;
+  animation: floatCard 6s ease-in-out infinite;
 }
-function shake(el) {
-  [-8,8,-6,6,-3,3,0].forEach((x,i)=>{ setTimeout(()=>{ el.style.transform=`translateX(${x}px)`; },i*70); });
-  setTimeout(()=>{ el.style.transform=''; }, 560);
-}
-
-/* ══ UNLOCK ══════════════════════════════════════════ */
-function unlockMain() {
-  const opening = document.getElementById('opening-page');
-  const main    = document.getElementById('main-page');
-  main.classList.remove('hidden');
-  main.style.overflowY = 'auto';
-  // Double rAF ensures layout is complete before we measure
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    buildHeartGrid();
-    startRain();
-    playMusic();
-  }));
-  setTimeout(()=>{
-    opening.classList.add('hidden');
-    setTimeout(()=>opening.remove(), 1000);
-  }, 150);
+@keyframes floatCard {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
 }
 
-/* ══ MUSIC ═══════════════════════════════════════════ */
-function playMusic() {
-  const audio = document.getElementById('bg-music');
-  if (!audio) return;
-  audio.volume = 0;
-  audio.play().then(()=>{
-    let v=0;
-    const t=setInterval(()=>{ v=Math.min(v+0.02,0.45); audio.volume=v; if(v>=0.45)clearInterval(t); },120);
-  }).catch(()=>{
-    const b=document.createElement('div');
-    b.innerHTML='🎵 Tap anywhere to play music';
-    b.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(232,99,122,0.92);color:#fff;padding:10px 26px;border-radius:50px;font-family:\'Dancing Script\',cursive;font-size:1.05rem;cursor:pointer;z-index:9999;box-shadow:0 4px 16px rgba(192,57,79,0.3);white-space:nowrap;';
-    document.body.appendChild(b);
-    const go=()=>{ audio.volume=0.4; audio.play(); b.remove(); document.removeEventListener('click',go); };
-    document.addEventListener('click',go);
-  });
+.opening-card .tagline {
+  font-family: 'Dancing Script', cursive;
+  font-size: clamp(1rem,2.5vw,1.2rem);
+  color: var(--rose); letter-spacing:.04em;
+  margin-bottom: 10px; opacity:.85;
+}
+.opening-card h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.6rem,4.5vw,2.3rem);
+  font-weight: 600; color: var(--deep);
+  line-height: 1.3; margin-bottom: 36px;
+}
+.opening-card .question {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.1rem,3vw,1.4rem);
+  font-style: italic; color: var(--dark);
+  margin-bottom: 26px; line-height: 1.5;
 }
 
-/* ══ INIT ════════════════════════════════════════════ */
-injectHeartClipPath();
-document.getElementById('date-input').addEventListener('keydown',e=>{ if(e.key==='Enter')checkDate(); });
-let _rt;
-window.addEventListener('resize',()=>{
-  clearTimeout(_rt);
-  _rt=setTimeout(()=>{ const g=document.getElementById('heart-grid'); if(g&&g.children.length)buildHeartGrid(); },250);
-});
+input[type="date"] {
+  width: 100%; padding: 14px 20px;
+  border: 2px solid var(--gold); border-radius: 50px;
+  background: rgba(255,255,255,.9);
+  font-family: 'Lato', sans-serif; font-size: 1rem;
+  color: var(--dark); text-align: center;
+  cursor: pointer; outline: none;
+  transition: border-color .3s, box-shadow .3s;
+  -webkit-appearance: none; appearance: none;
+}
+input[type="date"]:focus,
+input[type="date"]:hover {
+  border-color: var(--rose);
+  box-shadow: 0 0 0 4px rgba(232,99,122,.15);
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(50%) sepia(50%) saturate(400%) hue-rotate(300deg);
+  transform: scale(1.2);
+}
+
+.btn-confirm {
+  margin-top: 22px; padding: 14px 44px;
+  background: linear-gradient(135deg, var(--rose), var(--deep));
+  color: #fff; border: none; border-radius: 50px;
+  font-family: 'Dancing Script', cursive; font-size: 1.2rem;
+  letter-spacing: .05em; cursor: pointer;
+  transition: transform .25s, box-shadow .25s;
+  box-shadow: 0 6px 24px var(--shadow);
+}
+.btn-confirm:hover  { transform: translateY(-3px); box-shadow: 0 10px 32px var(--shadow); }
+.btn-confirm:active { transform: translateY(0); }
+
+.error-msg {
+  margin-top: 18px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.05rem;
+  color: var(--deep); opacity: 0;
+  transition: opacity .4s; min-height: 1.5em;
+}
+.error-msg.visible { opacity: 1; }
+
+.deco-heart {
+  position: absolute; font-size: 1.4rem;
+  opacity: .18; pointer-events: none;
+  animation: floatDeco 8s ease-in-out infinite;
+}
+.deco-heart:nth-child(1){top:8%;left:7%;font-size:2rem;animation-delay:0s}
+.deco-heart:nth-child(2){top:15%;right:9%;animation-delay:1.5s}
+.deco-heart:nth-child(3){bottom:18%;left:5%;font-size:1.1rem;animation-delay:3s}
+.deco-heart:nth-child(4){bottom:10%;right:6%;font-size:1.8rem;animation-delay:4s}
+.deco-heart:nth-child(5){top:40%;left:2%;font-size:1rem;animation-delay:2s}
+@keyframes floatDeco {
+  0%,100%{transform:translateY(0) rotate(-10deg)}
+  50%    {transform:translateY(-18px) rotate(10deg)}
+}
+
+/* ── Main Page ────────────────────────── */
+#main-page {
+  background: linear-gradient(160deg,#fff0f3,#fde0e6 40%,#fcc8d4 80%,#f9b8c8);
+  z-index: 5;
+  overflow-y: auto;
+  position: absolute;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0 0 80px;
+}
+
+/* ── Falling hearts ───────────────────── */
+#hearts-container {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 100; overflow: hidden;
+}
+.rain-heart {
+  position: absolute; top: -60px;
+  animation: rainFall linear infinite; opacity: .7;
+}
+@keyframes rainFall {
+  0%   { transform: translateY(0) rotate(0deg);     opacity:.8; }
+  80%  { opacity:.5; }
+  100% { transform: translateY(105vh) rotate(30deg); opacity:0; }
+}
+
+/* ── Main Header ──────────────────────── */
+.main-header {
+  text-align: center;
+  padding: 70px 20px 30px;
+}
+.main-header .eyebrow {
+  font-family: 'Dancing Script', cursive;
+  font-size: clamp(1.1rem,3vw,1.5rem);
+  color: var(--rose); letter-spacing:.05em; margin-bottom:10px;
+}
+.main-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem,6vw,3.6rem);
+  font-weight: 300; color: var(--deep); line-height:1.2;
+}
+.main-header h2 em { font-style:italic; font-weight:600; }
+.divider {
+  margin: 28px auto; width:80px; height:2px;
+  background: linear-gradient(90deg,transparent,var(--rose),transparent);
+}
+
+/* ══════════════════════════════════════
+   HEART PHOTO SECTION
+   — grid is a square canvas sized by JS
+   — all photos are CIRCLES (border-radius:50%)
+   — centred with margin auto
+   ══════════════════════════════════════ */
+#heart-section {
+  width: 100%;
+  padding: 0 20px 40px;
+  display: flex;
+  justify-content: center;   /* centres the grid horizontally */
+  align-items: flex-start;
+}
+
+#heart-grid {
+  position: relative;
+  /* width & height set by JS in px */
+  flex-shrink: 0;
+}
+
+/* Every surrounding photo: CIRCLE */
+.hp {
+  position: absolute;
+  border-radius: 50% !important;   /* ← force circle, no exceptions */
+  overflow: hidden;
+  border: 3px solid rgba(255,255,255,.95);
+  box-shadow: 0 3px 14px rgba(192,57,79,.25);
+  transition: transform .3s, box-shadow .3s;
+  animation: popIn .55s ease both;
+  cursor: pointer;
+}
+.hp:hover {
+  transform: scale(1.13) translateY(-5px);
+  box-shadow: 0 10px 26px rgba(192,57,79,.4);
+  z-index: 20;
+}
+.hp img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+  border-radius: 50% !important;   /* belt-and-braces */
+}
+@keyframes popIn {
+  from { opacity:0; transform:scale(.5); }
+  to   { opacity:1; transform:scale(1); }
+}
+
+/* Centre heart photo */
+.hc {
+  position: absolute;
+  z-index: 6;
+  animation: heartPulse 2.5s ease-in-out infinite;
+}
+.hc img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+  clip-path: url(#heartClip);
+  filter: drop-shadow(0 6px 20px rgba(192,57,79,.45));
+}
+.hc-border {
+  position: absolute; inset: -6px;
+  background: linear-gradient(135deg,#e8637a,#c0394f);
+  clip-path: url(#heartClip);
+  z-index: -1;
+}
+.hc-fill {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg,#fbd0d8,#f5a8ba);
+  clip-path: url(#heartClip);
+}
+@keyframes heartPulse {
+  0%,100%{transform:scale(1)}
+  50%    {transform:scale(1.06)}
+}
+
+/* ── Love Letter ──────────────────────── */
+.letter-section {
+  max-width: 700px; margin: 50px auto 0; padding: 0 24px;
+}
+.letter-card {
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,200,210,.6);
+  border-radius: 24px; padding: 52px 56px;
+  box-shadow: 0 16px 50px rgba(192,57,79,.12);
+  position: relative; overflow: hidden;
+}
+.letter-card::before {
+  content:'💌'; position:absolute;
+  top:-20px; right:30px; font-size:5rem;
+  opacity:.08; transform:rotate(-15deg);
+}
+.letter-card h3 {
+  font-family: 'Dancing Script', cursive;
+  font-size: clamp(1.8rem,4.5vw,2.5rem);
+  color: var(--deep); text-align:center; margin-bottom:32px;
+}
+.letter-body {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1rem,2.2vw,1.2rem);
+  line-height:1.9; color:#5a2d38;
+  font-style:italic; white-space:pre-line;
+}
+.placeholder-note {
+  font-style:normal; color:var(--gold);
+  font-family:'Lato',sans-serif; font-size:.88rem;
+  border:1px dashed var(--gold); border-radius:8px;
+  padding:12px 18px; display:inline-block;
+}
+.letter-signature {
+  text-align:right; margin-top:32px;
+  font-family:'Dancing Script',cursive;
+  font-size:1.4rem; color:var(--rose);
+}
+
+/* ── Footer ───────────────────────────── */
+.site-footer {
+  text-align:center; margin-top:60px; padding-bottom:40px;
+  font-family:'Dancing Script',cursive;
+  font-size:1.1rem; color:var(--rose); opacity:.7;
+}
+
+@media(max-width:600px){
+  .opening-card{padding:40px 28px 36px}
+  .letter-card{padding:36px 28px}
+}
