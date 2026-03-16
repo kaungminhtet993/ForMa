@@ -5,7 +5,7 @@
 /* ── CONFIG ── */
 const CORRECT_DATE = '2026-03-11';
 
-const PHOTOS = Array.from({length:19},(_,i)=>
+const PHOTOS = Array.from({length:17},(_,i)=>
   `images/photo${String(i+1).padStart(2,'0')}.jpg`
 );
 const CENTER_PHOTO = 'images/center.jpg';
@@ -47,8 +47,7 @@ function injectSVG() {
 
 /* ══════════════════════════════════════
    HEART POSITIONS (hand-tuned, normalised 0-1)
-   ONE point at the very bottom tip.
-   Extra photos moved to fill the lobes nicely.
+   17 points — one tip at the bottom, clean shape.
    ══════════════════════════════════════ */
 function heartPoints() {
   return [
@@ -60,7 +59,7 @@ function heartPoints() {
     { x:0.100, y:0.545 },
     { x:0.195, y:0.665 },
     { x:0.310, y:0.770 },  // lower-left
-    { x:0.500, y:0.920 },  // ONE bottom tip only
+    { x:0.500, y:0.920 },  // ONE bottom tip
     { x:0.690, y:0.770 },  // lower-right
     { x:0.805, y:0.665 },
     { x:0.900, y:0.545 },  // right side
@@ -69,8 +68,6 @@ function heartPoints() {
     { x:0.785, y:0.140 },
     { x:0.645, y:0.068 },  // upper-right lobe
     { x:0.500, y:0.260 },  // inner centre
-    { x:0.370, y:0.185 },  // extra left lobe fill
-    { x:0.630, y:0.185 },  // extra right lobe fill
   ];
 }
 
