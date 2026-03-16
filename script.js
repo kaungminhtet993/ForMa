@@ -46,27 +46,31 @@ function injectSVG() {
 }
 
 /* ══════════════════════════════════════
-   PARAMETRIC HEART POINTS
-   x(t) = 16·sin³(t)
-   y(t) = 13·cos(t) − 5·cos(2t) − 2·cos(3t) − cos(4t)
-   Returns 19 {x,y} normalised to 0–1
+   HEART POSITIONS (hand-tuned, normalised 0-1)
+   Bottom tip points spread wide so they never bunch.
    ══════════════════════════════════════ */
-function heartPoints(n) {
-  const pts = [];
-  for (let i = 0; i < n; i++) {
-    const t = -Math.PI + (2 * Math.PI * i) / n;
-    pts.push({
-      x:  16 * Math.pow(Math.sin(t), 3),
-      y: -(13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t))
-    });
-  }
-  const xs = pts.map(p=>p.x), ys = pts.map(p=>p.y);
-  const x0=Math.min(...xs), x1=Math.max(...xs);
-  const y0=Math.min(...ys), y1=Math.max(...ys);
-  return pts.map(p=>({
-    x:(p.x-x0)/(x1-x0),
-    y:(p.y-y0)/(y1-y0)
-  }));
+function heartPoints() {
+  return [
+    { x:0.500, y:0.060 },  // top centre
+    { x:0.340, y:0.075 },  // upper-left lobe
+    { x:0.195, y:0.150 },
+    { x:0.100, y:0.275 },
+    { x:0.075, y:0.420 },  // left side
+    { x:0.115, y:0.560 },
+    { x:0.210, y:0.675 },
+    { x:0.320, y:0.775 },  // lower-left
+    { x:0.420, y:0.860 },  // bottom spread
+    { x:0.500, y:0.920 },  // very tip
+    { x:0.580, y:0.860 },  // bottom spread
+    { x:0.680, y:0.775 },  // lower-right
+    { x:0.790, y:0.675 },
+    { x:0.885, y:0.560 },  // right side
+    { x:0.925, y:0.420 },
+    { x:0.900, y:0.275 },
+    { x:0.805, y:0.150 },
+    { x:0.660, y:0.075 },  // upper-right lobe
+    { x:0.500, y:0.265 },  // inner centre
+  ];
 }
 
 /* ══════════════════════════════════════
@@ -89,7 +93,7 @@ function buildGrid() {
   grid.style.height   = SIZE + 'px';
   grid.style.position = 'relative';
 
-  const points = heartPoints(19);
+  const points = heartPoints();
 
   points.forEach((p, i) => {
     /* Map 0–1 → pixel centre within padded area */
