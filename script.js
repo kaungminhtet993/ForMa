@@ -46,35 +46,30 @@ function injectSVG() {
 }
 
 /* ══════════════════════════════════════
-   HEART POSITIONS — true heart silhouette
-   Two bumps at top, sharp single tip at bottom
+   HEART POSITIONS
+   Normalised 0-1, manually tuned for a
+   classic heart: two bumps top, sharp tip bottom.
+   17 photos total.
    ══════════════════════════════════════ */
 function heartPoints() {
   return [
-    // ── top dip (centre between the two bumps)
-    { x:0.500, y:0.220 },
-    // ── LEFT bump peak
-    { x:0.260, y:0.060 },
-    // ── left lobe, going down
-    { x:0.080, y:0.160 },
-    { x:0.020, y:0.340 },
-    { x:0.060, y:0.510 },
-    { x:0.160, y:0.660 },
-    { x:0.290, y:0.780 },
-    { x:0.410, y:0.880 },
-    // ── single bottom tip
-    { x:0.500, y:0.960 },
-    // ── right lobe, going up
-    { x:0.590, y:0.880 },
-    { x:0.710, y:0.780 },
-    { x:0.840, y:0.660 },
-    { x:0.940, y:0.510 },
-    { x:0.980, y:0.340 },
-    { x:0.920, y:0.160 },
-    // ── RIGHT bump peak
-    { x:0.740, y:0.060 },
-    // ── left lobe accent (fills the left bump nicely)
-    { x:0.155, y:0.220 },
+    { x:0.50, y:0.18 },  // top-centre dip
+    { x:0.27, y:0.04 },  // left bump peak
+    { x:0.09, y:0.18 },  // left outer
+    { x:0.02, y:0.38 },  // left wide
+    { x:0.05, y:0.57 },  // left lower
+    { x:0.17, y:0.73 },  // lower-left
+    { x:0.33, y:0.86 },  // bottom-left
+    { x:0.50, y:0.96 },  // SINGLE bottom tip
+    { x:0.67, y:0.86 },  // bottom-right
+    { x:0.83, y:0.73 },  // lower-right
+    { x:0.95, y:0.57 },  // right lower
+    { x:0.98, y:0.38 },  // right wide
+    { x:0.91, y:0.18 },  // right outer
+    { x:0.73, y:0.04 },  // right bump peak
+    { x:0.62, y:0.13 },  // right inner lobe
+    { x:0.38, y:0.13 },  // left inner lobe
+    { x:0.50, y:0.42 },  // centre (behind the hc)
   ];
 }
 
@@ -86,24 +81,33 @@ function buildGrid() {
   const grid    = document.getElementById('heart-grid');
   grid.innerHTML = '';
 
-  /* Canvas size: fit inside the section with padding */
-  const avail = section.clientWidth - 48;
-  const SIZE  = Math.min(avail, 680);   /* max 680 px square */
-  const DIAM  = Math.round(SIZE * 0.13);/* circle diameter   */
+  // Canvas: square, fits viewport width minus padding
+  const avail = Math.min(section.clientWidth - 32, window.innerHeight * 0.85, 700);
+  const SIZE  = avail;
+  const DIAM  = Math.round(SIZE * 0.138);
   const R     = DIAM / 2;
-  const PAD   = DIAM * 0.55;           /* edge padding so circles don't clip */
 
-  /* Set grid to an explicit square */
-  grid.style.width    = SIZE + 'px';
-  grid.style.height   = SIZE + 'px';
-  grid.style.position = 'relative';
+  // Explicit square canvas — no aspect-ratio tricks
+  grid.style.cssText = `
+    position: relative;
+    width:  ${SIZE}px;
+    height: ${SIZE}px;
+    flex-shrink: 0;
+  `;
 
   const points = heartPoints();
 
+  const BLUSH = [
+    '#f9b8c8','#f7a8ba','#f5c0cc','#fbd0d8','#f9c4d0',
+    '#f7b0c0','#f5a0b4','#fbc8d4','#f9bcc8','#f7acbc',
+    '#f5bcca','#f9c8d2','#f7b8c4','#f5a8b8','#fbd4dc',
+    '#f9c0cc','#f7b0c2'
+  ];
+
   points.forEach((p, i) => {
-    /* Map 0–1 → pixel centre within padded area */
-    const cx = PAD + p.x * (SIZE - PAD * 2);
-    const cy = PAD + p.y * (SIZE - PAD * 2);
+    // Map 0-1 directly to pixels — NO extra padding that distorts the shape
+    const cx = p.x * SIZE;
+    const cy = p.y * SIZE;
 
     const div = document.createElement('div');
     div.className = 'hp';
@@ -112,47 +116,44 @@ function buildGrid() {
       height:          ${DIAM}px;
       left:            ${Math.round(cx - R)}px;
       top:             ${Math.round(cy - R)}px;
-      background:      ${BLUSH[i]};
+      background:      ${BLUSH[i % BLUSH.length]};
       animation-delay: ${(i * 0.06).toFixed(2)}s;
     `;
-
     const img = document.createElement('img');
     img.src     = PHOTOS[i];
     img.alt     = `Memory ${i+1}`;
     img.loading = 'lazy';
-    img.onerror = () => { img.style.display = 'none'; };
+    img.onerror = () => { img.style.display='none'; };
     div.appendChild(img);
     grid.appendChild(div);
   });
 
-  /* ── Centre heart photo ── */
-  const CS   = Math.round(DIAM * 2.3);  /* heart size */
-  const left = Math.round(SIZE / 2 - CS / 2);
-  const top  = Math.round(SIZE * 0.48 - CS / 2);
+  /* Centre heart */
+  const CS   = Math.round(DIAM * 2.5);
+  const left = Math.round(SIZE * 0.50 - CS / 2);
+  const top  = Math.round(SIZE * 0.50 - CS / 2);
 
   const hc = document.createElement('div');
   hc.className = 'hc';
   hc.style.cssText = `width:${CS}px;height:${CS}px;left:${left}px;top:${top}px;`;
 
-  /* border glow */
   const border = document.createElement('div');
   border.className = 'hc-border';
   hc.appendChild(border);
 
-  /* placeholder fill */
   const fill = document.createElement('div');
   fill.className = 'hc-fill';
   hc.appendChild(fill);
 
-  /* actual photo */
   const cImg = document.createElement('img');
   cImg.src = CENTER_PHOTO;
   cImg.alt = 'Our special photo';
-  cImg.onerror = () => { cImg.style.display = 'none'; };
+  cImg.onerror = () => { cImg.style.display='none'; };
   hc.appendChild(cImg);
 
   grid.appendChild(hc);
 }
+
 
 /* ══════════════════════════════════════
    FALLING HEARTS
