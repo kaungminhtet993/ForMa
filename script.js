@@ -46,28 +46,35 @@ function injectSVG() {
 }
 
 /* ══════════════════════════════════════
-   HEART POSITIONS (hand-tuned, normalised 0-1)
-   17 points — one tip at the bottom, clean shape.
+   HEART POSITIONS — true heart silhouette
+   Two bumps at top, sharp single tip at bottom
    ══════════════════════════════════════ */
 function heartPoints() {
   return [
-    { x:0.500, y:0.055 },  // top centre
-    { x:0.355, y:0.068 },  // upper-left lobe
-    { x:0.215, y:0.140 },
-    { x:0.115, y:0.265 },
-    { x:0.072, y:0.410 },  // left side
-    { x:0.100, y:0.545 },
-    { x:0.195, y:0.665 },
-    { x:0.310, y:0.770 },  // lower-left
-    { x:0.500, y:0.920 },  // ONE bottom tip
-    { x:0.690, y:0.770 },  // lower-right
-    { x:0.805, y:0.665 },
-    { x:0.900, y:0.545 },  // right side
-    { x:0.928, y:0.410 },
-    { x:0.885, y:0.265 },
-    { x:0.785, y:0.140 },
-    { x:0.645, y:0.068 },  // upper-right lobe
-    { x:0.500, y:0.260 },  // inner centre
+    // ── top dip (centre between the two bumps)
+    { x:0.500, y:0.220 },
+    // ── LEFT bump peak
+    { x:0.260, y:0.060 },
+    // ── left lobe, going down
+    { x:0.080, y:0.160 },
+    { x:0.020, y:0.340 },
+    { x:0.060, y:0.510 },
+    { x:0.160, y:0.660 },
+    { x:0.290, y:0.780 },
+    { x:0.410, y:0.880 },
+    // ── single bottom tip
+    { x:0.500, y:0.960 },
+    // ── right lobe, going up
+    { x:0.590, y:0.880 },
+    { x:0.710, y:0.780 },
+    { x:0.840, y:0.660 },
+    { x:0.940, y:0.510 },
+    { x:0.980, y:0.340 },
+    { x:0.920, y:0.160 },
+    // ── RIGHT bump peak
+    { x:0.740, y:0.060 },
+    // ── left lobe accent (fills the left bump nicely)
+    { x:0.155, y:0.220 },
   ];
 }
 
@@ -121,7 +128,7 @@ function buildGrid() {
   /* ── Centre heart photo ── */
   const CS   = Math.round(DIAM * 2.3);  /* heart size */
   const left = Math.round(SIZE / 2 - CS / 2);
-  const top  = Math.round(SIZE * 0.46 - CS / 2);
+  const top  = Math.round(SIZE * 0.48 - CS / 2);
 
   const hc = document.createElement('div');
   hc.className = 'hc';
