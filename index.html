@@ -4,133 +4,68 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>For Ma 💞</title>
-
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Dancing+Script:wght@400;600;700&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
-
-  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- ══════════════════════════════════════════════
-       OPENING PAGE (date lock)
-  ══════════════════════════════════════════════ -->
+  <!-- OPENING PAGE -->
   <div id="opening-page" class="page">
-
-    <!-- Decorative floating hearts -->
     <span class="deco-heart">💗</span>
     <span class="deco-heart">🌸</span>
     <span class="deco-heart">💕</span>
     <span class="deco-heart">✿</span>
     <span class="deco-heart">💞</span>
-
     <div class="opening-card">
       <p class="tagline">✦ a little corner, just for us ✦</p>
       <h1>This website is exclusively made for Ma&nbsp;💞</h1>
       <p class="question">Do you remember the day we became ours?</p>
-
-      <!-- Date picker — correct answer: 11 March 2026 -->
       <input type="date" id="date-input" aria-label="Pick our special date" />
       <br />
       <button class="btn-confirm" onclick="checkDate()">Unlock our world 🔑</button>
-      <p class="error-msg" id="error-msg">Hmm… that's not our special day. Try again my love 💭</p>
+      <p class="error-msg" id="error-msg"></p>
     </div>
+  </div>
 
-  </div><!-- /opening-page -->
-
-
-  <!-- ══════════════════════════════════════════════
-       FALLING HEARTS CONTAINER (active on main page)
-  ══════════════════════════════════════════════ -->
+  <!-- HEARTS RAIN -->
   <div id="hearts-container"></div>
 
-
-  <!-- ══════════════════════════════════════════════
-       MAIN PAGE (revealed after correct date)
-  ══════════════════════════════════════════════ -->
+  <!-- MAIN PAGE -->
   <div id="main-page" class="page hidden">
-
-    <!--
-      🎵 MUSIC
-      Place your romantic instrumental at: audio/music.mp3
-      Free tracks: https://pixabay.com/music/  or  https://freemusicarchive.org/
-    -->
     <audio id="bg-music" loop>
       <source src="audio/music.mp3" type="audio/mpeg" />
     </audio>
 
-    <!-- Header -->
     <header class="main-header">
       <p class="eyebrow">✦ our little universe ✦</p>
       <h2>Every moment with you<br/>is my <em>favourite</em> story</h2>
       <div class="divider"></div>
     </header>
 
-    <!-- ── Photo Heart Layout ─────────────────────────────────
-         19 surrounding photos + 1 centre heart photo.
-         All injected by script.js.
-
-         📁 Add your images:
-            images/photo01.jpg … images/photo19.jpg  (surrounding)
-            images/center.jpg                         (centre heart)
-    ──────────────────────────────────────────────────────── -->
-    <section class="heart-section" aria-label="Our photos">
-      <div class="heart-grid-wrapper" id="heart-grid"></div>
+    <!-- PHOTO HEART -->
+    <section id="heart-section">
+      <div id="heart-grid"></div>
     </section>
 
-    <!-- ── Love Letter ────────────────────────────────────────
-         ✏️  HOW TO ADD YOUR LETTER:
-             Delete the <span class="placeholder-note"> element below
-             and replace it with your plain letter text.
-             Line breaks are preserved automatically.
-    ──────────────────────────────────────────────────────── -->
+    <!-- LOVE LETTER -->
     <section class="letter-section">
       <div class="letter-card">
         <h3>A Letter For Ma 💌</h3>
-
         <div class="letter-body" id="letter-body">
           <span class="placeholder-note">
-            ✏️ Your love letter goes here.<br />
-            Open <strong>index.html</strong>, find
-            <code>&lt;div id="letter-body"&gt;</code>
-            and replace this note with your words.
+            ✏️ Your love letter goes here.<br/>
+            Open <strong>index.html</strong>, find <code>&lt;div id="letter-body"&gt;</code> and replace this with your words.
           </span>
-
-          <!--
-          ═══════════════════════════════════════════
-          EXAMPLE — remove the comment markers below
-          and replace the text with your own letter:
-          ═══════════════════════════════════════════
-
-My dearest Ma,
-
-From the very first moment I knew, I knew everything was going to be different.
-You came into my life quietly, like the softest note of a song I had been waiting for.
-
-Every single day with you feels like a gift I don't deserve
-but will spend my whole life being grateful for.
-
-You are my home, my peace, and my greatest adventure all at once.
-
-I love you beyond every word I know.
-
-          ═══════════════════════════════════════════ -->
         </div>
-
         <p class="letter-signature">— forever yours 💗</p>
       </div>
     </section>
 
     <footer class="site-footer">made with every beat of my heart, just for you 💞</footer>
+  </div>
 
-  </div><!-- /main-page -->
-
-
-  <!-- JavaScript -->
   <script src="script.js"></script>
-
 </body>
 </html>
