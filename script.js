@@ -47,29 +47,30 @@ function injectSVG() {
 
 /* ══════════════════════════════════════
    HEART POSITIONS (hand-tuned, normalised 0-1)
-   Bottom tip points spread wide so they never bunch.
+   ONE point at the very bottom tip.
+   Extra photos moved to fill the lobes nicely.
    ══════════════════════════════════════ */
 function heartPoints() {
   return [
-    { x:0.500, y:0.060 },  // top centre
-    { x:0.340, y:0.075 },  // upper-left lobe
-    { x:0.195, y:0.150 },
-    { x:0.100, y:0.275 },
-    { x:0.075, y:0.420 },  // left side
-    { x:0.115, y:0.560 },
-    { x:0.210, y:0.675 },
-    { x:0.320, y:0.775 },  // lower-left
-    { x:0.420, y:0.860 },  // bottom spread
-    { x:0.500, y:0.920 },  // very tip
-    { x:0.580, y:0.860 },  // bottom spread
-    { x:0.680, y:0.775 },  // lower-right
-    { x:0.790, y:0.675 },
-    { x:0.885, y:0.560 },  // right side
-    { x:0.925, y:0.420 },
-    { x:0.900, y:0.275 },
-    { x:0.805, y:0.150 },
-    { x:0.660, y:0.075 },  // upper-right lobe
-    { x:0.500, y:0.265 },  // inner centre
+    { x:0.500, y:0.055 },  // top centre
+    { x:0.355, y:0.068 },  // upper-left lobe
+    { x:0.215, y:0.140 },
+    { x:0.115, y:0.265 },
+    { x:0.072, y:0.410 },  // left side
+    { x:0.100, y:0.545 },
+    { x:0.195, y:0.665 },
+    { x:0.310, y:0.770 },  // lower-left
+    { x:0.500, y:0.920 },  // ONE bottom tip only
+    { x:0.690, y:0.770 },  // lower-right
+    { x:0.805, y:0.665 },
+    { x:0.900, y:0.545 },  // right side
+    { x:0.928, y:0.410 },
+    { x:0.885, y:0.265 },
+    { x:0.785, y:0.140 },
+    { x:0.645, y:0.068 },  // upper-right lobe
+    { x:0.500, y:0.260 },  // inner centre
+    { x:0.370, y:0.185 },  // extra left lobe fill
+    { x:0.630, y:0.185 },  // extra right lobe fill
   ];
 }
 
